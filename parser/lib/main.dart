@@ -45,7 +45,6 @@ class _VideoPlusAppState extends State<VideoPlusApp> {
         pageTransitionsTheme: const PageTransitionsTheme(builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
         }),
-        sliderTheme: const SliderThemeData(overlayShape: SliderComponentShape.noOverlay),
       ),
       home: const HomeScreen(),
     );
