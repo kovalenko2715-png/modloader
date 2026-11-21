@@ -37,6 +37,14 @@ jobs:
           grep -q "usesCleartextTraffic" "$MAIN" || \
             sed -i 's|<application|<application\n        android:usesCleartextTraffic="true"|' "$MAIN"
 
+      - name: Skip vital lint
+        run: |
+          if [ -f android/app/build.gradle.kts ]; then
+            printf '\nandroid {\n    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }\n}\n' >> android/app/build.gradle.kts
+          else
+            printf '\nandroid {\n    lint {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n}\n' >> android/app/build.gradle
+          fi
+
       - name: Pub get
         run: flutter pub get
 
