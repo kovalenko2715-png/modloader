@@ -38,7 +38,8 @@
     sack:    { img: "assets/decor/sack.png",    dx: 49, dy: 11, w: 22, h: 28 },
     crate:   { img: "assets/decor/crate.png",   dx: 35, dy: 8, w: 58, h: 37 },
     hay:     { img: "assets/decor/hay.png",     dx: 11, dy: -12, w: 98, h: 70 },
-    ladder:  { img: "assets/decor/ladder.png",  dx: 49, dy: -57, w: 51, h: 96 }
+    ladder:  { img: "assets/decor/ladder.png",  dx: 49, dy: -57, w: 51, h: 96 },
+    barn:    { img: "assets/decor/barn.png",    dx: -64, dy: -92, w: 204, h: 238 }
   };
 
   const LEVELS = [
@@ -93,7 +94,7 @@
   }
 
   /* ---------- DOM ---------- */
-  const VER = "?v=8";
+  const VER = "?v=9";
   const asset = (p) => p + VER;
   const board = document.getElementById("board");
   const coinsEl = document.getElementById("coins");
@@ -106,7 +107,7 @@
   const modalTitle = document.getElementById("modal-title");
 
   nameEl.textContent = "👨‍🌾 " + playerName;
-  hintEl.textContent = "Ферма v8";
+  hintEl.textContent = "Ферма v9";
   const size = () => LEVELS[state.level].size;
 
   function unlocked(i, j) {
@@ -128,7 +129,7 @@
     const vw = sceneEl.clientWidth || window.innerWidth || 360;
     const cw = n * TW;
     const ch = ELEMH + (n - 1) * ((ELEMH - 6) / 2);
-    const s = Math.min(1, (vw - 8) / cw);
+    const s = Math.min(1, (vw - 8) / (cw * 1.08));
     board.style.transform = "translate(" + (-(cw / 2) * s) + "px, " + (-(PADY + ch / 2) * s - 20) + "px) scale(" + s + ")";
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
@@ -171,6 +172,7 @@
       }
     }
     const decor = [
+      { p: PIECES.barn, vi: -2, vj: 1, z: 1 },
       { p: PIECES.hay, vi: -1, vj: 1 },
       { p: PIECES.ladder, vi: -1, vj: n - 1 },
       { p: PIECES.crate, vi: 1, vj: -1 },
@@ -187,7 +189,7 @@
       dv.style.top = (xy[1] + dc.p.dy) + "px";
       dv.style.width = dc.p.w + "px";
       dv.style.height = dc.p.h + "px";
-      dv.style.zIndex = 10 + (dc.vi + dc.vj) * 10;
+      dv.style.zIndex = (dc.z !== undefined) ? dc.z : 10 + (dc.vi + dc.vj) * 10;
       board.appendChild(dv);
     });
     coinsEl.textContent = "🪙 " + state.coins;
@@ -376,7 +378,7 @@
   /* ---------- Старт ---------- */
   ["assets/tiles/grass.png", "assets/tiles/grass2.png", "assets/tiles/soil.png", "assets/tiles/soil2.png",
    "assets/tiles/fence_e.png", "assets/tiles/fence_s.png", "assets/tiles/fence_n.png", "assets/tiles/fence_w.png",
-   "assets/decor/hay.png", "assets/decor/crate.png", "assets/decor/sack.png", "assets/decor/ladder.png",
+   "assets/decor/hay.png", "assets/decor/crate.png", "assets/decor/sack.png", "assets/decor/ladder.png", "assets/decor/barn.png",
    "assets/crops/plant1.png", "assets/crops/plant2.png", "assets/crops/plant3.png"].forEach((p) => {
     const im = new Image();
     im.src = asset(p);
