@@ -122,7 +122,7 @@ class SaveEditorActivity : ComponentActivity() {
                     val written = if (uri == null) false else withContext(Dispatchers.IO) {
                         runCatching {
                             contentResolver.openOutputStream(uri)
-                                ?.use { it.write(updated) } == true
+                                ?.use { out -> out.write(updated); true } == true
                         }.getOrDefault(false)
                     }
                     busy = false
