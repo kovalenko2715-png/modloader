@@ -95,6 +95,7 @@
   const modalTitle = document.getElementById("modal-title");
 
   nameEl.textContent = "👨‍🌾 " + playerName;
+  hintEl.textContent = "Ферма v4 — обновлено";
   const size = () => LEVELS[state.level].size;
 
   function unlocked(i, j) {
