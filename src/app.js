@@ -25,9 +25,9 @@
 
   /* ---------- Культуры ---------- */
   const CROPS = {
-    carrot: { name: "Морковь", seed: 5, sell: 14, growMs: 3 * 60000, unlockLevel: 0, img: "assets/crops/carrot.png" },
-    radish: { name: "Редис",   seed: 12, sell: 32, growMs: 6 * 60000, unlockLevel: 1, img: "assets/crops/radish.png" },
-    potato: { name: "Картофель", seed: 35, sell: 95, growMs: 12 * 60000, unlockLevel: 2, img: "assets/crops/potato.png" }
+    carrot: { name: "Кукуруза: молодая", seed: 5, sell: 14, growMs: 3 * 60000, unlockLevel: 0, img: "assets/crops/plant1.png", w: 56, h: 36 },
+    radish: { name: "Кукуруза: двойная", seed: 12, sell: 32, growMs: 6 * 60000, unlockLevel: 1, img: "assets/crops/plant2.png", w: 60, h: 53 },
+    potato: { name: "Золотая кукуруза", seed: 35, sell: 95, growMs: 12 * 60000, unlockLevel: 2, img: "assets/crops/plant3.png", w: 60, h: 58 }
   };
 
   const LEVELS = [
@@ -82,7 +82,7 @@
   }
 
   /* ---------- DOM ---------- */
-  const VER = "?v=6";
+  const VER = "?v=7";
   const asset = (p) => p + VER;
   const board = document.getElementById("board");
   const coinsEl = document.getElementById("coins");
@@ -95,7 +95,7 @@
   const modalTitle = document.getElementById("modal-title");
 
   nameEl.textContent = "👨‍🌾 " + playerName;
-  hintEl.textContent = "Ферма v6";
+  hintEl.textContent = "Ферма v7";
   const size = () => LEVELS[state.level].size;
 
   function unlocked(i, j) {
@@ -107,15 +107,15 @@
   }
 
   /* ---------- Рендер ---------- */
-  const TW = 96, TH = 58;
+  const TW = 96, TH = 48;
   function render() {
     board.innerHTML = "";
     const n = size();
     const vw = sceneEl.clientWidth || window.innerWidth || 360;
-    const cw = TW * (n + 1);
-    const ch = 112 + 58 * (n - 1);
+    const cw = n * TW;
+    const ch = 52 + TH * (n - 1);
     const s = Math.min(1, (vw - 8) / cw);
-    board.style.transform = "translate(" + (-(cw / 2) * s) + "px, " + (-(ch / 2) * s - 20) + "px) scale(" + s + ")";
+    board.style.transform = "translate(" + (-(cw / 2 + TW / 2) * s) + "px, " + (-(40 + ch / 2) * s - 20) + "px) scale(" + s + ")";
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         const x = (i - j) * (TW / 2);
@@ -137,16 +137,15 @@
           el.style.backgroundColor = (t && t.crop) ? "#6b4f3e" : "#4d7c3a";
           el.style.backgroundImage = "url(" + asset(bgImg) + ")";
           if (t && t.crop) attachCrop(el, t);
-          if (t && !t.crop && t.soil) attachBadge(el, "+", 30, 50, "seed");
+          if (t && !t.crop && t.soil) attachBadge(el, "+", 40, 14, "seed");
         }
         el.addEventListener("click", onTile);
         board.appendChild(el);
       }
     }
     const decor = [
-      { img: "assets/decor/tree.png", x: n * TW + TW / 2 + 10, y: 70, w: 100, h: 125 },
-      { img: "assets/decor/tree.png", x: -45, y: 40 + (n - 1) * TH / 2, w: 88, h: 110 },
-      { img: "assets/decor/animal.png", x: n * TW / 2 + 40, y: 58 * (n - 1) + 48, w: 72, h: 90 }
+      { img: "assets/decor/sack.png", x: cw - 45, y: ch - 10, w: 72, h: 78 },
+      { img: "assets/decor/hay.png", x: 55, y: 40 + (n - 1) * TH - 50, w: 80, h: 66 }
     ];
     decor.forEach((dc) => {
       const dv = document.createElement("div");
@@ -174,17 +173,21 @@
   function attachCrop(el, t) {
     const d = CROPS[t.crop];
     const grown = t.readyAt && Date.now() >= t.readyAt;
+    const k = grown ? 1 : 0.62;
+    const w = Math.round(d.w * k), h = Math.round(d.h * k);
     const img = document.createElement("div");
-    img.className = "crop" + (grown ? " ready" : (t.watered ? " stage1" : ""));
-    img.style.backgroundImage = "url(" + asset(grown ? d.img : "assets/crops/stage1.png") + ")";
-    img.style.left = (parseFloat(el.style.left) + 16) + "px";
-    img.style.top = (parseFloat(el.style.top) + 8) + "px";
+    img.className = "crop" + (grown ? " ready" : "");
+    img.style.backgroundImage = "url(" + asset(d.img) + ")";
+    img.style.width = w + "px";
+    img.style.height = h + "px";
+    img.style.left = (parseFloat(el.style.left) + (TW - w) / 2) + "px";
+    img.style.top = (parseFloat(el.style.top) + 52 - h) + "px";
     img.style.zIndex = 10;
     board.appendChild(img);
     if (grown) {
-      attachBadge(el, "✋", 30, 50);
+      attachBadge(el, "✋", 40, 14);
     } else {
-      attachBadge(el, t.watered ? clockText(t.readyAt) : "💧", 24, 52, t.watered ? "clock" : "zzz");
+      attachBadge(el, t.watered ? clockText(t.readyAt) : "💧", 40, 14, t.watered ? "clock" : "zzz");
     }
   }
 

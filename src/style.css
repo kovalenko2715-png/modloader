@@ -41,7 +41,7 @@ html, body {
 
 .tile {
   position: absolute;
-  width: 96px; height: 112px;
+  width: 96px; height: 52px;
   background-color: #4d7c3a;
   background-size: 100% 100%;
   background-repeat: no-repeat;
