@@ -29,5 +29,8 @@
                 <data android:mimeType="application/zip" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SaveEditorActivity"
+            android:exported="false" />
     </application>
 </manifest>

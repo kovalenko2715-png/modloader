@@ -75,7 +75,11 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MaterialTheme {
-                ModLoaderScreen()
+                ModLoaderScreen(
+                    onOpenEditor = {
+                        startActivity(Intent(this, SaveEditorActivity::class.java))
+                    }
+                )
             }
         }
         handleIncomingIntent(intent)
@@ -171,7 +175,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun ModLoaderScreen() {
+    private fun ModLoaderScreen(onOpenEditor: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -183,6 +187,10 @@ class MainActivity : ComponentActivity() {
 
             if (profiles.isEmpty()) {
                 Text(status, style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(
+                    onClick = onOpenEditor,
+                    enabled = !busy
+                ) { Text("Save-редактор (без root)") }
             } else {
                 Text("Поддерживаемые игры:", style = MaterialTheme.typography.titleSmall)
                 profiles.forEach { profile ->
@@ -212,6 +220,9 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Text("Создать пак")
                     }
+                }
+                OutlinedButton(onClick = onOpenEditor, enabled = !busy) {
+                    Text("Save-редактор (без root)")
                 }
             }
         }
