@@ -82,7 +82,7 @@
   }
 
   /* ---------- DOM ---------- */
-  const VER = "?v=4";
+  const VER = "?v=5";
   const asset = (p) => p + VER;
   const board = document.getElementById("board");
   const coinsEl = document.getElementById("coins");
@@ -95,7 +95,7 @@
   const modalTitle = document.getElementById("modal-title");
 
   nameEl.textContent = "👨‍🌾 " + playerName;
-  hintEl.textContent = "Ферма v4 — обновлено";
+  hintEl.textContent = "Ферма v5 — обновлено";
   const size = () => LEVELS[state.level].size;
 
   function unlocked(i, j) {
@@ -112,8 +112,10 @@
     board.innerHTML = "";
     const n = size();
     const vw = sceneEl.clientWidth || window.innerWidth || 360;
-    const s = Math.min(1, (vw - 8) / (n * TW));
-    board.style.transform = "translate(-50%, -58%) scale(" + s + ")";
+    const cw = TW * (n + 1);
+    const ch = 112 + 58 * (n - 1);
+    const s = Math.min(1, (vw - 8) / cw);
+    board.style.transform = "translate(" + (-(cw / 2) * s) + "px, " + (-(ch / 2) * s - 20) + "px) scale(" + s + ")";
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         const x = (i - j) * (TW / 2);
