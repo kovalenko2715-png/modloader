@@ -118,10 +118,11 @@ class SaveEditorActivity : ComponentActivity() {
             result.fold(
                 onSuccess = { updated ->
                     val backupOk = makeBackup(current)
-                    val written = withContext(Dispatchers.IO) {
+                    val uri = fileUri
+                    val written = if (uri == null) false else withContext(Dispatchers.IO) {
                         runCatching {
-                            contentResolver.openOutputStream(fileUri ?: return@withContext false)
-                                ?.use { it.write(updated) } ?: false
+                            contentResolver.openOutputStream(uri)
+                                ?.use { it.write(updated) } == true
                         }.getOrDefault(false)
                     }
                     busy = false
