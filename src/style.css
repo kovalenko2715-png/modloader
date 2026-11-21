@@ -55,7 +55,6 @@ html, body {
   background-size: 100% 100%;
   pointer-events: none;
   transform-origin: bottom center;
-  translate: -2px -10px;
 }
 .crop.ready { animation: bounce 0.8s ease-in-out infinite alternate; }
 .crop.stage1 { animation: sway 2.4s ease-in-out infinite alternate; }

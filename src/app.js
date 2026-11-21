@@ -82,7 +82,7 @@
   }
 
   /* ---------- DOM ---------- */
-  const VER = "?v=5";
+  const VER = "?v=6";
   const asset = (p) => p + VER;
   const board = document.getElementById("board");
   const coinsEl = document.getElementById("coins");
@@ -95,7 +95,7 @@
   const modalTitle = document.getElementById("modal-title");
 
   nameEl.textContent = "👨‍🌾 " + playerName;
-  hintEl.textContent = "Ферма v5 — обновлено";
+  hintEl.textContent = "Ферма v6";
   const size = () => LEVELS[state.level].size;
 
   function unlocked(i, j) {
@@ -143,6 +143,21 @@
         board.appendChild(el);
       }
     }
+    const decor = [
+      { img: "assets/decor/tree.png", x: n * TW + TW / 2 + 10, y: 70, w: 100, h: 125 },
+      { img: "assets/decor/tree.png", x: -45, y: 40 + (n - 1) * TH / 2, w: 88, h: 110 },
+      { img: "assets/decor/animal.png", x: n * TW / 2 + 40, y: 58 * (n - 1) + 48, w: 72, h: 90 }
+    ];
+    decor.forEach((dc) => {
+      const dv = document.createElement("div");
+      dv.className = "decor";
+      dv.style.backgroundImage = "url(" + asset(dc.img) + ")";
+      dv.style.left = dc.x + "px";
+      dv.style.top = dc.y + "px";
+      dv.style.width = dc.w + "px";
+      dv.style.height = dc.h + "px";
+      board.appendChild(dv);
+    });
     coinsEl.textContent = "🪙 " + state.coins;
     renderPanel();
   }
@@ -163,7 +178,7 @@
     img.className = "crop" + (grown ? " ready" : (t.watered ? " stage1" : ""));
     img.style.backgroundImage = "url(" + asset(grown ? d.img : "assets/crops/stage1.png") + ")";
     img.style.left = (parseFloat(el.style.left) + 16) + "px";
-    img.style.top = (parseFloat(el.style.top) - 14) + "px";
+    img.style.top = (parseFloat(el.style.top) + 8) + "px";
     img.style.zIndex = 10;
     board.appendChild(img);
     if (grown) {
