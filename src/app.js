@@ -82,8 +82,11 @@
   }
 
   /* ---------- DOM ---------- */
+  const VER = "?v=4";
+  const asset = (p) => p + VER;
   const board = document.getElementById("board");
   const coinsEl = document.getElementById("coins");
+  const sceneEl = document.getElementById("scene");
   const nameEl = document.getElementById("player-name");
   const hintEl = document.getElementById("hint");
   const cropsEl = document.getElementById("crops");
@@ -107,6 +110,9 @@
   function render() {
     board.innerHTML = "";
     const n = size();
+    const vw = sceneEl.clientWidth || window.innerWidth || 360;
+    const s = Math.min(1, (vw - 8) / (n * TW));
+    board.style.transform = "translate(-50%, -58%) scale(" + s + ")";
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         const x = (i - j) * (TW / 2);
@@ -118,12 +124,15 @@
         el.style.top = (y + 40) + "px";
         if (!unlocked(i, j)) {
           el.classList.add("locked");
-          el.style.backgroundImage = "url(assets/tiles/grass2.png)";
+          el.style.backgroundColor = "#33422a";
+          el.style.backgroundImage = "url(" + asset("assets/tiles/grass2.png") + ")";
           el.style.filter = "brightness(0.55)";
         } else {
           const t = state.tiles[i + "." + j];
           const base = ((i + j) % 2 === 0) ? "assets/tiles/grass.png" : "assets/tiles/grass2.png";
-          el.style.backgroundImage = "url(" + (t ? (t.crop ? "assets/tiles/soil.png" : (t.soil ? "assets/tiles/soil2.png" : base)) : base) + ")";
+          const bgImg = t ? (t.crop ? "assets/tiles/soil.png" : (t.soil ? "assets/tiles/soil2.png" : base)) : base;
+          el.style.backgroundColor = (t && t.crop) ? "#6b4f3e" : "#4d7c3a";
+          el.style.backgroundImage = "url(" + asset(bgImg) + ")";
           if (t && t.crop) attachCrop(el, t);
           if (t && !t.crop && t.soil) attachBadge(el, "+", 30, 50, "seed");
         }
@@ -149,7 +158,7 @@
     const grown = t.readyAt && Date.now() >= t.readyAt;
     const img = document.createElement("div");
     img.className = "crop" + (grown ? " ready" : (t.watered ? " stage1" : ""));
-    img.style.backgroundImage = "url(" + (grown ? d.img : "assets/crops/stage1.png") + ")";
+    img.style.backgroundImage = "url(" + asset(grown ? d.img : "assets/crops/stage1.png") + ")";
     img.style.left = (parseFloat(el.style.left) + 16) + "px";
     img.style.top = (parseFloat(el.style.top) - 14) + "px";
     img.style.zIndex = 10;
@@ -176,7 +185,7 @@
       return;
     }
     const key = i + "." + j;
-    const t = state.tiles[key];
+    let t = state.tiles[key];
 
     if (t && t.crop) {
       const grown = t.readyAt && Date.now() >= t.readyAt;
@@ -227,12 +236,13 @@
       const d = CROPS[key];
       const b = document.createElement("div");
       b.className = "crop-btn" + (selectedCrop === key ? " selected" : "") + (!cropUnlocked(key) ? " locked" : "");
-      b.innerHTML = '<img src="' + d.img + '" alt=""><span>' + d.name + "<br>🪙" + d.seed + " → " + d.sell + "</span>";
+      b.innerHTML = '<img src="' + asset(d.img) + '" alt=""><span>' + d.name + "<br>🪙" + d.seed + " → " + d.sell + "</span>";
       b.addEventListener("click", () => {
         if (!cropUnlocked(key)) { hint("Откроется после расширения территории"); return; }
         selectedCrop = key;
         render();
       });
+      b.querySelector("img").onerror = function () { this.style.display = "none"; };
       cropsEl.appendChild(b);
     });
 
@@ -308,6 +318,11 @@
   }
 
   /* ---------- Старт ---------- */
+  ["assets/tiles/grass.png", "assets/tiles/grass2.png", "assets/tiles/soil.png", "assets/tiles/soil2.png"].forEach((p) => {
+    const im = new Image();
+    im.src = asset(p);
+  });
+  window.addEventListener("resize", render);
   (async () => {
     render();
     await initDb();

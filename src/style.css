@@ -32,18 +32,18 @@ html, body {
 
 #scene {
   position: absolute; inset: 0;
-  perspective: 900px;
   overflow: hidden;
 }
 #board {
   position: absolute;
   left: 50%; top: 50%;
-  transform-style: preserve-3d;
+  transform: translate(-50%, -58%);
 }
 
 .tile {
   position: absolute;
   width: 96px; height: 112px;
+  background-color: #4d7c3a;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   cursor: pointer;
