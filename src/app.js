@@ -25,9 +25,20 @@
 
   /* ---------- Культуры ---------- */
   const CROPS = {
-    carrot: { name: "Кукуруза: молодая", seed: 5, sell: 14, growMs: 3 * 60000, unlockLevel: 0, img: "assets/crops/plant1.png", w: 56, h: 36 },
-    radish: { name: "Кукуруза: двойная", seed: 12, sell: 32, growMs: 6 * 60000, unlockLevel: 1, img: "assets/crops/plant2.png", w: 60, h: 53 },
-    potato: { name: "Золотая кукуруза", seed: 35, sell: 95, growMs: 12 * 60000, unlockLevel: 2, img: "assets/crops/plant3.png", w: 60, h: 58 }
+    carrot: { name: "Кукуруза: молодая", seed: 5, sell: 14, growMs: 3 * 60000, unlockLevel: 0, img: "assets/crops/plant1.png", w: 83, h: 48, dx: 22, dy: 8 },
+    radish: { name: "Кукуруза: двойная", seed: 12, sell: 32, growMs: 6 * 60000, unlockLevel: 1, img: "assets/crops/plant2.png", w: 121, h: 99, dx: 0, dy: -40 },
+    potato: { name: "Золотая кукуруза", seed: 35, sell: 95, growMs: 12 * 60000, unlockLevel: 2, img: "assets/crops/plant3.png", w: 110, h: 92, dx: 4, dy: -36 }
+  };
+
+  const PIECES = {
+    fence_e: { img: "assets/tiles/fence_e.png", dx: 0, dy: -29, w: 67, h: 68 },
+    fence_s: { img: "assets/tiles/fence_s.png", dx: 61, dy: -29, w: 67, h: 68 },
+    fence_n: { img: "assets/tiles/fence_n.png", dx: 0, dy: 2, w: 67, h: 68 },
+    fence_w: { img: "assets/tiles/fence_w.png", dx: 61, dy: 2, w: 67, h: 68 },
+    sack:    { img: "assets/decor/sack.png",    dx: 49, dy: 11, w: 22, h: 28 },
+    crate:   { img: "assets/decor/crate.png",   dx: 35, dy: 8, w: 58, h: 37 },
+    hay:     { img: "assets/decor/hay.png",     dx: 11, dy: -12, w: 98, h: 70 },
+    ladder:  { img: "assets/decor/ladder.png",  dx: 49, dy: -57, w: 51, h: 96 }
   };
 
   const LEVELS = [
@@ -82,7 +93,7 @@
   }
 
   /* ---------- DOM ---------- */
-  const VER = "?v=7";
+  const VER = "?v=8";
   const asset = (p) => p + VER;
   const board = document.getElementById("board");
   const coinsEl = document.getElementById("coins");
@@ -95,7 +106,7 @@
   const modalTitle = document.getElementById("modal-title");
 
   nameEl.textContent = "👨‍🌾 " + playerName;
-  hintEl.textContent = "Ферма v7";
+  hintEl.textContent = "Ферма v8";
   const size = () => LEVELS[state.level].size;
 
   function unlocked(i, j) {
@@ -107,54 +118,76 @@
   }
 
   /* ---------- Рендер ---------- */
-  const TW = 96, TH = 48;
+  const TW = 128, ELEMH = 70, PADY = 56;
+  function tileXY(i, j, n) {
+    return [ (i - j) * (TW / 2) + (n - 1) * (TW / 2), (i + j) * ((ELEMH - 6) / 2) + PADY ];
+  }
   function render() {
     board.innerHTML = "";
     const n = size();
     const vw = sceneEl.clientWidth || window.innerWidth || 360;
     const cw = n * TW;
-    const ch = 52 + TH * (n - 1);
+    const ch = ELEMH + (n - 1) * ((ELEMH - 6) / 2);
     const s = Math.min(1, (vw - 8) / cw);
-    board.style.transform = "translate(" + (-(cw / 2 + TW / 2) * s) + "px, " + (-(40 + ch / 2) * s - 20) + "px) scale(" + s + ")";
+    board.style.transform = "translate(" + (-(cw / 2) * s) + "px, " + (-(PADY + ch / 2) * s - 20) + "px) scale(" + s + ")";
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
-        const x = (i - j) * (TW / 2);
-        const y = (i + j) * (TH / 2);
+        const xy = tileXY(i, j, n);
+        const x = xy[0], y = xy[1];
         const el = document.createElement("div");
         el.className = "tile";
         el.dataset.i = i; el.dataset.j = j;
-        el.style.left = (x + n * TW / 2) + "px";
-        el.style.top = (y + 40) + "px";
+        el.style.left = x + "px";
+        el.style.top = y + "px";
         if (!unlocked(i, j)) {
           el.classList.add("locked");
-          el.style.backgroundColor = "#33422a";
           el.style.backgroundImage = "url(" + asset("assets/tiles/grass2.png") + ")";
-          el.style.filter = "brightness(0.55)";
         } else {
           const t = state.tiles[i + "." + j];
           const base = ((i + j) % 2 === 0) ? "assets/tiles/grass.png" : "assets/tiles/grass2.png";
           const bgImg = t ? (t.crop ? "assets/tiles/soil.png" : (t.soil ? "assets/tiles/soil2.png" : base)) : base;
-          el.style.backgroundColor = (t && t.crop) ? "#6b4f3e" : "#4d7c3a";
           el.style.backgroundImage = "url(" + asset(bgImg) + ")";
-          if (t && t.crop) attachCrop(el, t);
-          if (t && !t.crop && t.soil) attachBadge(el, "+", 40, 14, "seed");
+          if (t && t.crop) attachCrop(el, t, i, j);
+          if (t && !t.crop && t.soil) attachBadge(el, "+", 50, 24, "seed");
+          const fp = [];
+          if (i === 0) fp.push(PIECES.fence_e);
+          if (j === 0) fp.push(PIECES.fence_s);
+          if (i === n - 1) fp.push(PIECES.fence_w);
+          if (j === n - 1) fp.push(PIECES.fence_n);
+          fp.forEach((p) => {
+            const f = document.createElement("div");
+            f.className = "piece";
+            f.style.backgroundImage = "url(" + asset(p.img) + ")";
+            f.style.width = p.w + "px";
+            f.style.height = p.h + "px";
+            f.style.left = (x + p.dx) + "px";
+            f.style.top = (y + p.dy) + "px";
+            f.style.zIndex = 10 + (i + j) * 10 + 5;
+            board.appendChild(f);
+          });
         }
         el.addEventListener("click", onTile);
         board.appendChild(el);
       }
     }
     const decor = [
-      { img: "assets/decor/sack.png", x: cw - 45, y: ch - 10, w: 72, h: 78 },
-      { img: "assets/decor/hay.png", x: 55, y: 40 + (n - 1) * TH - 50, w: 80, h: 66 }
+      { p: PIECES.hay, vi: -1, vj: 1 },
+      { p: PIECES.ladder, vi: -1, vj: n - 1 },
+      { p: PIECES.crate, vi: 1, vj: -1 },
+      { p: PIECES.sack, vi: -1, vj: 0 },
+      { p: PIECES.hay, vi: n - 1, vj: n },
+      { p: PIECES.crate, vi: n, vj: n - 1 }
     ];
     decor.forEach((dc) => {
+      const xy = tileXY(dc.vi, dc.vj, n);
       const dv = document.createElement("div");
       dv.className = "decor";
-      dv.style.backgroundImage = "url(" + asset(dc.img) + ")";
-      dv.style.left = dc.x + "px";
-      dv.style.top = dc.y + "px";
-      dv.style.width = dc.w + "px";
-      dv.style.height = dc.h + "px";
+      dv.style.backgroundImage = "url(" + asset(dc.p.img) + ")";
+      dv.style.left = (xy[0] + dc.p.dx) + "px";
+      dv.style.top = (xy[1] + dc.p.dy) + "px";
+      dv.style.width = dc.p.w + "px";
+      dv.style.height = dc.p.h + "px";
+      dv.style.zIndex = 10 + (dc.vi + dc.vj) * 10;
       board.appendChild(dv);
     });
     coinsEl.textContent = "🪙 " + state.coins;
@@ -166,28 +199,30 @@
     b.className = "badge" + (cls ? " " + cls : "");
     b.style.left = (parseFloat(el.style.left) + dx) + "px";
     b.style.top = (parseFloat(el.style.top) + dy) + "px";
+    b.style.zIndex = 200;
     b.textContent = text;
     board.appendChild(b);
   }
 
-  function attachCrop(el, t) {
+  function attachCrop(el, t, i, j) {
     const d = CROPS[t.crop];
     const grown = t.readyAt && Date.now() >= t.readyAt;
     const k = grown ? 1 : 0.62;
     const w = Math.round(d.w * k), h = Math.round(d.h * k);
+    const elL = parseFloat(el.style.left), elT = parseFloat(el.style.top);
     const img = document.createElement("div");
     img.className = "crop" + (grown ? " ready" : "");
     img.style.backgroundImage = "url(" + asset(d.img) + ")";
     img.style.width = w + "px";
     img.style.height = h + "px";
-    img.style.left = (parseFloat(el.style.left) + (TW - w) / 2) + "px";
-    img.style.top = (parseFloat(el.style.top) + 52 - h) + "px";
-    img.style.zIndex = 10;
+    img.style.left = (elL + d.dx + (d.w - w) / 2) + "px";
+    img.style.top = (elT + d.dy + (d.h - h)) + "px";
+    img.style.zIndex = 10 + (i + j) * 10;
     board.appendChild(img);
     if (grown) {
-      attachBadge(el, "✋", 40, 14);
+      attachBadge(el, "✋", 50, 24);
     } else {
-      attachBadge(el, t.watered ? clockText(t.readyAt) : "💧", 40, 14, t.watered ? "clock" : "zzz");
+      attachBadge(el, t.watered ? clockText(t.readyAt) : "💧", 50, 24, t.watered ? "clock" : "zzz");
     }
   }
 
@@ -339,7 +374,10 @@
   }
 
   /* ---------- Старт ---------- */
-  ["assets/tiles/grass.png", "assets/tiles/grass2.png", "assets/tiles/soil.png", "assets/tiles/soil2.png"].forEach((p) => {
+  ["assets/tiles/grass.png", "assets/tiles/grass2.png", "assets/tiles/soil.png", "assets/tiles/soil2.png",
+   "assets/tiles/fence_e.png", "assets/tiles/fence_s.png", "assets/tiles/fence_n.png", "assets/tiles/fence_w.png",
+   "assets/decor/hay.png", "assets/decor/crate.png", "assets/decor/sack.png", "assets/decor/ladder.png",
+   "assets/crops/plant1.png", "assets/crops/plant2.png", "assets/crops/plant3.png"].forEach((p) => {
     const im = new Image();
     im.src = asset(p);
   });
