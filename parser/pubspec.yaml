@@ -1,0 +1,21 @@
+name: video_parser
+description: VideoPlus — нативный парсер видео-сайтов на Flutter (переосмысление VideoParser v3).
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.7.0
+  shared_preferences: ^2.2.2
+  video_player: ^2.8.2
+  url_launcher: ^6.2.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/js/

@@ -1,0 +1,50 @@
+name: build-apk
+
+on:
+  push:
+    paths:
+      - "parser/**"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: parser
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate android host
+        run: flutter create . --platforms=android --project-name video_parser
+
+      - name: Manifest permissions
+        run: |
+          MAIN=android/app/src/main/AndroidManifest.xml
+          grep -q "android.permission.INTERNET" "$MAIN" || \
+            sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET" />\n    <application|' "$MAIN"
+          grep -q "usesCleartextTraffic" "$MAIN" || \
+            sed -i 's|<application|<application\n        android:usesCleartextTraffic="true"|' "$MAIN"
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: videoplus-apk
+          path: parser/build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
